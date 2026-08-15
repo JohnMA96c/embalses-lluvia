@@ -1,0 +1,243 @@
+{
+  "generated_at": "2026-08-15T12:43:28.385077Z",
+  "nota": "Snapshot generado a partir de una ejecucion real del pipeline (15 de agosto de 2026), con datos de muestra oficialmente marcados como ilustrativos por el propio repositorio (ver pipeline/sample_data/README.md). El indice de estres hidrico solo cubre el anyo 2026 (unico anyo con lecturas de embalse en la muestra) y la lluvia acumulada quedo en 0mm porque el pipeline aun no conecta la estacion AEMET de la Sierra de Madrid. Los modelos de vino y huerta no lograron entrenar con esta muestra por falta de anyos en comun entre el indice de estres hidrico (solo 2026) y los historicos de DOCa Rioja (2015-2024) y MAPA (2019-2024); se muestran los historicos reales sin metrica de modelo, en lugar de simular un resultado.",
+  "embalses": [
+    {
+      "nombre": "El Atazar",
+      "cuenca": "Tajo",
+      "lat": 40.9,
+      "lon": -3.63,
+      "pct_capacidad": 46.13,
+      "volumen_hm3": 196.2,
+      "capacidad_total_hm3": 425.3
+    },
+    {
+      "nombre": "El Vellón",
+      "cuenca": "Tajo",
+      "lat": 40.88,
+      "lon": -3.68,
+      "pct_capacidad": 92.6,
+      "volumen_hm3": 33.8,
+      "capacidad_total_hm3": 36.5
+    },
+    {
+      "nombre": "El Villar",
+      "cuenca": "Tajo",
+      "lat": 41.04,
+      "lon": -3.71,
+      "pct_capacidad": 91.07,
+      "volumen_hm3": 20.4,
+      "capacidad_total_hm3": 22.4
+    },
+    {
+      "nombre": "La Jarosa",
+      "cuenca": "Tajo",
+      "lat": 40.68,
+      "lon": -4.03,
+      "pct_capacidad": 86.73,
+      "volumen_hm3": 8.5,
+      "capacidad_total_hm3": 9.8
+    },
+    {
+      "nombre": "Los Arroyos",
+      "cuenca": "Tajo",
+      "lat": 40.35,
+      "lon": -4.4,
+      "pct_capacidad": 70.73,
+      "volumen_hm3": 2.9,
+      "capacidad_total_hm3": 4.1
+    },
+    {
+      "nombre": "Mequinenza",
+      "cuenca": "Ebro",
+      "lat": 41.37,
+      "lon": 0.43,
+      "pct_capacidad": 85.39,
+      "volumen_hm3": 1309.0,
+      "capacidad_total_hm3": 1533.0
+    },
+    {
+      "nombre": "Navacerrada",
+      "cuenca": "Tajo",
+      "lat": 40.6,
+      "lon": -4.13,
+      "pct_capacidad": 97.0,
+      "volumen_hm3": 9.7,
+      "capacidad_total_hm3": 10.0
+    },
+    {
+      "nombre": "Picadas",
+      "cuenca": "Tajo",
+      "lat": 40.24,
+      "lon": -4.38,
+      "pct_capacidad": 73.13,
+      "volumen_hm3": 4.9,
+      "capacidad_total_hm3": 6.7
+    },
+    {
+      "nombre": "Pinilla",
+      "cuenca": "Tajo",
+      "lat": 41.08,
+      "lon": -3.66,
+      "pct_capacidad": 86.2,
+      "volumen_hm3": 33.1,
+      "capacidad_total_hm3": 38.4
+    },
+    {
+      "nombre": "Puentes Viejas",
+      "cuenca": "Tajo",
+      "lat": 41.02,
+      "lon": -3.68,
+      "pct_capacidad": 83.08,
+      "volumen_hm3": 32.9,
+      "capacidad_total_hm3": 39.6
+    },
+    {
+      "nombre": "Riosequillo",
+      "cuenca": "Tajo",
+      "lat": 41.0,
+      "lon": -3.65,
+      "pct_capacidad": 87.07,
+      "volumen_hm3": 10.1,
+      "capacidad_total_hm3": 11.6
+    },
+    {
+      "nombre": "San Juan",
+      "cuenca": "Tajo",
+      "lat": 40.23,
+      "lon": -4.45,
+      "pct_capacidad": 85.37,
+      "volumen_hm3": 140.6,
+      "capacidad_total_hm3": 164.7
+    },
+    {
+      "nombre": "Santillana",
+      "cuenca": "Tajo",
+      "lat": 40.75,
+      "lon": -3.85,
+      "pct_capacidad": 72.81,
+      "volumen_hm3": 66.4,
+      "capacidad_total_hm3": 91.2
+    },
+    {
+      "nombre": "Valmayor",
+      "cuenca": "Tajo",
+      "lat": 40.55,
+      "lon": -4.07,
+      "pct_capacidad": 79.5,
+      "volumen_hm3": 101.2,
+      "capacidad_total_hm3": 127.3
+    }
+  ],
+  "estres_hidrico": [
+    {
+      "anyo": 2026,
+      "cuenca": "Ebro",
+      "indice": 0.25
+    },
+    {
+      "anyo": 2026,
+      "cuenca": "Tajo",
+      "indice": 0.75
+    }
+  ],
+  "vino": {
+    "anyos": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "calificaciones": [
+      "Muy Buena",
+      "Excelente",
+      "Buena",
+      "Muy Buena",
+      "Buena",
+      "Muy Buena",
+      "Excelente",
+      "Buena",
+      "Muy Buena",
+      "Buena"
+    ],
+    "metrica_modelo": {
+      "tipo": "no_entrenado",
+      "valor": null,
+      "aviso": "Sin anyos en comun entre el indice de estres hidrico (2026) y DOCa Rioja (2015-2024) en esta muestra"
+    }
+  },
+  "huerta": [
+    {
+      "cultivo": "alcachofa",
+      "anyos": [
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "toneladas": [
+        18500,
+        17900,
+        19200,
+        18100,
+        19800,
+        20600
+      ],
+      "mae_toneladas": null
+    },
+    {
+      "cultivo": "pimiento_piquillo",
+      "anyos": [
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "toneladas": [
+        12800,
+        12500,
+        13400,
+        12600,
+        13900,
+        14350
+      ],
+      "mae_toneladas": null
+    },
+    {
+      "cultivo": "esparrago",
+      "anyos": [
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "toneladas": [
+        3100,
+        2950,
+        3250,
+        3000,
+        3300,
+        3400
+      ],
+      "mae_toneladas": null
+    }
+  ],
+  "kpis": {
+    "pct_capacidad_medio": 81.2007142857143,
+    "estres_hidrico_actual": 0.5,
+    "horas_desde_ultima_ejecucion": 0,
+    "mae_modelo_nivel_pp": 0.08099731445312841
+  }
+}

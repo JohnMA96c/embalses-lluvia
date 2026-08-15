@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Embalses, Lluvia y Gastronomía — Ebro y Madrid</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --azul: #003D82;
+    --naranja: #FF6600;
+    --verde: #4CAF50;
+    --amarillo: #F5A623;
+    --rojo: #D9534F;
+    --fondo: #F4F5F7;
+    --texto: #1A1A2E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+  }
+  header {
+    background: var(--azul);
+    color: white;
+    padding: 20px 28px;
+  }
+  header h1 { margin: 0 0 4px 0; font-size: 1.5rem; }
+  header p { margin: 0; opacity: 0.85; font-size: 0.9rem; }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    padding: 20px 28px 0 28px;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .kpi-card .label { font-size: 0.78rem; color: #666; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 1.6rem; font-weight: 700; color: var(--azul); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+    padding: 20px 28px;
+  }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  #map { height: 480px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .charts { display: flex; flex-direction: column; gap: 20px; }
+  .chart-card {
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .chart-card h3 { margin: 0 0 10px 0; font-size: 0.95rem; }
+  .chart-card canvas { max-height: 220px; }
+
+  footer {
+    padding: 16px 28px 30px 28px;
+    font-size: 0.78rem;
+    color: #777;
+  }
+  .legend { display: flex; gap: 14px; align-items: center; margin-top: 10px; font-size: 0.8rem; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .aviso {
+    background: #FFF4E5;
+    border-left: 4px solid var(--amarillo);
+    padding: 10px 14px;
+    margin: 0 28px 0 28px;
+    font-size: 0.82rem;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Embalses, Lluvia y Gastronomía</h1>
+  <p>Cuenca del Ebro y sistema de Madrid — actualizado por un pipeline en Databricks, publicado gratis · <span id="generated-at">cargando…</span></p>
+</header>
+
+<div class="aviso" id="aviso-muestra" style="display:none">
+  Este dashboard está mostrando el <strong>snapshot de ejemplo</strong> incluido en el repositorio. Conecta el pipeline (ver <code>README.md</code>) para ver datos reales.
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="layout">
+  <div id="map"></div>
+  <div class="charts">
+    <div class="chart-card">
+      <h3>Índice de estrés hídrico — cuenca del Ebro</h3>
+      <canvas id="chart-estres"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Calificación de añada vs. índice de estrés hídrico</h3>
+      <canvas id="chart-vino"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Cosecha de la huerta riojana (toneladas)</h3>
+      <canvas id="chart-huerta"></canvas>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Fuentes: MITECO, SAIH Ebro, AEMET OpenData, Canal de Isabel II, DOCa Rioja, MAPA.
+  Stack 100% gratuito: Databricks Free Edition + GitHub Pages. Proyecto nacido en el módulo
+  "Fundamentos y Aplicaciones de Big Data" — pensado para seguir vivo después del curso.
+</footer>
+
+<script>
+async function loadSnapshot() {
+  const res = await fetch("data/snapshot.json");
+  return res.json();
+}
+
+function pctColor(pct) {
+  if (pct >= 60) return "#4CAF50";
+  if (pct >= 30) return "#F5A623";
+  return "#D9534F";
+}
+
+function renderKpis(data) {
+  const k = data.kpis;
+  const items = [
+    { label: "% capacidad media (embalses mostrados)", value: k.pct_capacidad_medio.toFixed(1) + "%" },
+    { label: "Estrés hídrico actual (Ebro)", value: k.estres_hidrico_actual.toFixed(2) },
+    { label: "Frescura del dato", value: k.horas_desde_ultima_ejecucion.toFixed(1) + " h" },
+    { label: "Error del modelo de nivel (MAE)", value: "±" + k.mae_modelo_nivel_pp.toFixed(1) + " pp" },
+  ];
+  const el = document.getElementById("kpis");
+  el.innerHTML = items.map(i => `
+    <div class="kpi-card">
+      <div class="label">${i.label}</div>
+      <div class="value">${i.value}</div>
+    </div>
+  `).join("");
+}
+
+function renderMap(data) {
+  const map = L.map("map").setView([41.3, -1.5], 6);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  data.embalses.forEach(e => {
+    const color = pctColor(e.pct_capacidad);
+    L.circleMarker([e.lat, e.lon], {
+      radius: 10 + (e.pct_capacidad / 100) * 8,
+      fillColor: color,
+      color: "#fff",
+      weight: 2,
+      fillOpacity: 0.85,
+    })
+      .addTo(map)
+      .bindPopup(
+        `<strong>${e.nombre}</strong> (${e.cuenca})<br>` +
+        `${e.pct_capacidad.toFixed(1)}% de capacidad<br>` +
+        `${e.volumen_hm3.toFixed(1)} / ${e.capacidad_total_hm3.toFixed(1)} hm³`
+      );
+  });
+
+  // Marcador de la zona de Rioja con icono de uva/huerta (capa que Embals.es no tiene)
+  const riojaIcon = L.divIcon({
+    className: "",
+    html: "🍇🌱",
+    iconSize: [40, 20],
+  });
+  L.marker([42.46, -2.45], { icon: riojaIcon })
+    .addTo(map)
+    .bindPopup(
+      `<strong>Rioja</strong><br>Vendimia y huerta, conectadas al agua por el ` +
+      `índice de estrés hídrico. Ver gráficos de la derecha.`
+    );
+}
+
+function renderEstresChart(data) {
+  const ebro = data.estres_hidrico.filter(d => d.cuenca === "Ebro").sort((a, b) => a.anyo - b.anyo);
+  const anyos = ebro.map(d => d.anyo);
+  const valores = ebro.map(d => d.indice);
+  new Chart(document.getElementById("chart-estres"), {
+    type: "bar",
+    data: {
+      labels: anyos,
+      datasets: [{ label: "Índice (0 = sin estrés, 1 = estrés máximo)", data: valores, backgroundColor: "#FF6600" }],
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 1 } } },
+  });
+}
+
+function renderVinoChart(data) {
+  const anyos = data.vino.anyos;
+  const califMap = { "Regular": 1, "Buena": 2, "Muy Buena": 3, "Excelente": 4 };
+  const calif = data.vino.calificaciones.map(c => califMap[c] ?? null);
+  const estresPorAnyo = Object.fromEntries(
+    data.estres_hidrico.filter(d => d.cuenca === "Ebro").map(d => [d.anyo, d.indice])
+  );
+  const estres = anyos.map(a => estresPorAnyo[a] ?? null);
+
+  new Chart(document.getElementById("chart-vino"), {
+    type: "line",
+    data: {
+      labels: anyos,
+      datasets: [
+        { label: "Calificación (1=Regular … 4=Excelente)", data: calif, borderColor: "#7B2D8B", yAxisID: "y", tension: 0.2 },
+        { label: "Índice de estrés hídrico", data: estres, borderColor: "#FF6600", yAxisID: "y1", tension: 0.2 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { min: 0, max: 4, position: "left", title: { display: true, text: "Calificación" } },
+        y1: { min: 0, max: 1, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Estrés hídrico" } },
+      },
+    },
+  });
+
+  const aviso = data.vino.metrica_modelo?.aviso;
+  if (aviso) {
+    const p = document.createElement("p");
+    p.style.fontSize = "0.75rem";
+    p.style.color = "#888";
+    p.style.margin = "8px 0 0 0";
+    const valorTexto = data.vino.metrica_modelo.valor === null ? "no disponible" : data.vino.metrica_modelo.valor;
+    p.textContent = "Modelo: " + data.vino.metrica_modelo.tipo + " (" + valorTexto + ") — " + aviso;
+    document.getElementById("chart-vino").parentElement.appendChild(p);
+  }
+}
+
+function renderHuertaChart(data) {
+  const colores = { alcachofa: "#4CAF50", pimiento_piquillo: "#D9534F", esparrago: "#8BC34A" };
+  const anyos = data.huerta[0]?.anyos ?? [];
+  new Chart(document.getElementById("chart-huerta"), {
+    type: "line",
+    data: {
+      labels: anyos,
+      datasets: data.huerta.map(h => ({
+        label: h.cultivo.replace("_", " ") + (h.mae_toneladas === null ? " (MAE no disponible)" : ` (MAE ±${h.mae_toneladas} t)`),
+        data: h.toneladas,
+        borderColor: colores[h.cultivo] || "#999",
+        tension: 0.2,
+      })),
+    },
+    options: { responsive: true, maintainAspectRatio: false },
+  });
+}
+
+(async function init() {
+  const data = await loadSnapshot();
+  document.getElementById("generated-at").textContent =
+    "última actualización: " + new Date(data.generated_at).toLocaleString("es-ES");
+  if (data.nota) document.getElementById("aviso-muestra").style.display = "block";
+  renderKpis(data);
+  renderMap(data);
+  renderEstresChart(data);
+  renderVinoChart(data);
+  renderHuertaChart(data);
+})();
+</script>
+
+</body>
+</html>
