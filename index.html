@@ -92,7 +92,7 @@
 </header>
 
 <div class="aviso" id="aviso-muestra" style="display:none">
-  Este dashboard está mostrando el <strong>snapshot de ejemplo</strong> incluido en el repositorio. Conecta el pipeline (ver <code>README.md</code>) para ver datos reales.
+  <span id="aviso-texto"></span>
 </div>
 
 <div class="kpis" id="kpis"></div>
@@ -262,7 +262,10 @@ function renderHuertaChart(data) {
   const data = await loadSnapshot();
   document.getElementById("generated-at").textContent =
     "última actualización: " + new Date(data.generated_at).toLocaleString("es-ES");
-  if (data.nota) document.getElementById("aviso-muestra").style.display = "block";
+  if (data.nota) {
+    document.getElementById("aviso-texto").textContent = data.nota;
+    document.getElementById("aviso-muestra").style.display = "block";
+  }
   renderKpis(data);
   renderMap(data);
   renderEstresChart(data);
